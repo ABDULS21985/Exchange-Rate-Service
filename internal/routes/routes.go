@@ -40,6 +40,10 @@ func InitializeRoutes(router *mux.Router, db *gorm.DB) {
 	apiRouter.HandleFunc("/fetch-cbn-exchange-rates", exchangeRateController.GetExchangeRates).Methods("GET")
 	apiRouter.HandleFunc("/exchange-rates", exchangeRateController.PostExchangeRates).Methods("POST")
 	apiRouter.HandleFunc("/currencies", exchangeRateController.GetCurrencies).Methods("GET")
+	apiRouter.HandleFunc("/exchange-rates/historical", exchangeRateController.GetHistoricalExchangeRates)
+	apiRouter.HandleFunc("/exchange-rates/convert", exchangeRateController.ConvertCurrency).Methods("POST")
+	apiRouter.HandleFunc("/exchange-rates/base-convert", exchangeRateController.ConvertRatesToBaseCurrency).Methods("GET")
+	apiRouter.HandleFunc("/exchange-rates/count", exchangeRateController.GetExchangeRateCount).Methods("GET")
 
 	// Health Check Route (public)
 	router.HandleFunc("/api/health", exchangeRateController.HealthCheck).Methods("GET")
