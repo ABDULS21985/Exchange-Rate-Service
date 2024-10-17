@@ -3,6 +3,7 @@
 package services
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -19,6 +20,7 @@ type ExchangeRateService interface {
 	GetHistoricalExchangeRates(currencyCode string, startDate, endDate int64) ([]models.ExchangeRate, error)
 	ConvertCurrency(fromCurrency, toCurrency string, amount float64) (float64, error)
 	ConvertToBaseCurrency(rates []models.ExchangeRate, baseCurrency string) ([]models.ExchangeRate, error)
+	ConvertRatesToBaseCurrency(baseCurrencyCode string, rates []models.ExchangeRate) ([]models.ExchangeRate, error)
 }
 
 type exchangeRateService struct {
@@ -130,4 +132,23 @@ func (s *exchangeRateService) CountExchangeRates() (int, error) {
 		return 0, fmt.Errorf("failed to count exchange rates: %v", err)
 	}
 	return count, nil
+}
+
+func (s *exchangeRateService) ConvertRatesToBaseCurrency(baseCurrencyCode string, rates []models.ExchangeRate) ([]models.ExchangeRate, error) {
+	// Get the rate for the specified base currency
+	baseRate, err := s.repo.GetExchangeRateByCurrency(baseCurrencyCode)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get base currency rate: %v", err)
+	}
+
+	if baseRate.Rate == 0 {
+		return nil, errors.New("base currency rate cannot be zero")
+	}
+
+	// Convert each rate relative to the base rate
+	for i := range rates {
+		rates[i].Rate = rates[i].Rate / baseRate.Rate
+	}
+
+	return rates, nil
 }

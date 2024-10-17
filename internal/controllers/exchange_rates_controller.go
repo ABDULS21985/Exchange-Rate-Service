@@ -288,3 +288,32 @@ func (c *ExchangeRateController) GetExchangeRateCount(w http.ResponseWriter, r *
 
 	utils.JSONResponse(w, response, http.StatusOK)
 }
+
+// ConvertRatesToBaseCurrency handles the conversion of multiple rates to a specified base currency
+func (c *ExchangeRateController) ConvertMultipleRatesToBaseCurrency(w http.ResponseWriter, r *http.Request) {
+	var request struct {
+		BaseCurrency string                `json:"base_currency"`
+		Rates        []models.ExchangeRate `json:"rates"`
+	}
+
+	// Parse the request body
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		utils.JSONResponse(w, map[string]string{"error": "Invalid request format"}, http.StatusBadRequest)
+		return
+	}
+
+	// Call the service to convert rates to the specified base currency
+	convertedRates, err := c.Service.ConvertRatesToBaseCurrency(request.BaseCurrency, request.Rates)
+	if err != nil {
+		log.Printf("Error converting rates: %v", err)
+		utils.JSONResponse(w, map[string]string{"error": "Failed to convert rates"}, http.StatusInternalServerError)
+		return
+	}
+
+	// Respond with the converted rates
+	response := map[string]interface{}{
+		"status": "Rates converted successfully",
+		"data":   convertedRates,
+	}
+	utils.JSONResponse(w, response, http.StatusOK)
+}
