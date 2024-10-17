@@ -67,7 +67,12 @@ func main() {
 		}
 
 		log.Println("Exchange rates updated successfully")
-		jsonResponse(w, map[string]string{"status": "Exchange rates updated successfully"}, http.StatusOK)
+		// Include both the status and the fetched data in the response
+		response := map[string]interface{}{
+			"status": "Exchange rates updated successfully",
+			"data":   data,
+		}
+		jsonResponse(w, response, http.StatusOK)
 	}).Methods("GET")
 
 	// Initialize Cron for daily data synchronization
@@ -102,9 +107,14 @@ func FetchExchangeRateData() (*models.ExchangeRateData, error) {
 	// Get the current date in the format YYYY-MM-DD
 	date := time.Now().Format("2006-01-02")
 
-	// Use the date to fetch historical exchange rates
-	url := fmt.Sprintf("https://openexchangerates.org/api/historical/%s.json?app_id=939b6a724b35438e8f0ecfadf91f9c4f", date)
+	// Get the API URL and app ID from the configuration
+	apiUrl := viper.GetString("EXCHANGE_RATE_API_URL")
+	appId := viper.GetString("EXCHANGE_RATE_APP_ID")
 
+	// Construct the URL using the date, API URL, and app ID
+	url := fmt.Sprintf(apiUrl+"?app_id=%s", date, appId)
+
+	// Make the HTTP request
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err

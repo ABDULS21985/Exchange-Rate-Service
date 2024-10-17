@@ -13,3 +13,6 @@ server:
 
 jwt:
   secret: drkatanga2020
+
+exchange_rate_api_url: "https://openexchangerates.org/api/historical/%s.json"
+exchange_rate_app_id: "939b6a724b35438e8f0ecfadf91f9c4f"
