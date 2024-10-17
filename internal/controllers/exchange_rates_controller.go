@@ -38,6 +38,7 @@ func (c *ExchangeRateController) GetExchangeRates(w http.ResponseWriter, r *http
 		}
 	}
 
+	// Fetch the exchange rates using the service layer
 	rates, err := c.Service.FetchExchangeRates(currencyCode, timestamp)
 	if err != nil {
 		log.Printf("Error fetching exchange rates: %v", err)
@@ -45,7 +46,32 @@ func (c *ExchangeRateController) GetExchangeRates(w http.ResponseWriter, r *http
 		return
 	}
 
-	utils.JSONResponse(w, rates, http.StatusOK)
+	// Check if the rates slice is empty
+	if len(rates) == 0 {
+		utils.JSONResponse(w, map[string]string{"error": "No exchange rates found for the given criteria"}, http.StatusNotFound)
+		return
+	}
+
+	// Aggregate the rates into a map
+	ratesMap := make(map[string]float64)
+	for _, rate := range rates {
+		if rate.Currency.Code != "" {
+			ratesMap[rate.Currency.Code] = rate.Rate
+		}
+	}
+
+	// Format the response data
+	responseData := map[string]interface{}{
+		"data": map[string]interface{}{
+			"timestamp": rates[0].Timestamp.Unix(),  // Assuming all rates have the same timestamp
+			"base":      rates[0].BaseCurrency.Code, // Assuming all rates share the same base currency
+			"rates":     ratesMap,
+		},
+		"status": "Exchange rates fetched successfully",
+	}
+
+	// Return the formatted response
+	utils.JSONResponse(w, responseData, http.StatusOK)
 }
 
 // PostExchangeRates handles POST /api/exchange-rates

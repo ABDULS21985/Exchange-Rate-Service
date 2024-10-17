@@ -37,7 +37,7 @@ func InitializeRoutes(router *mux.Router, db *gorm.DB) {
 	apiRouter.Use(middleware.AuthMiddleware)
 
 	// Exchange Rate Routes
-	apiRouter.HandleFunc("/exchange-rates", exchangeRateController.GetExchangeRates).Methods("GET")
+	apiRouter.HandleFunc("/fetch-cbn-exchange-rates", exchangeRateController.GetExchangeRates).Methods("GET")
 	apiRouter.HandleFunc("/exchange-rates", exchangeRateController.PostExchangeRates).Methods("POST")
 	apiRouter.HandleFunc("/currencies", exchangeRateController.GetCurrencies).Methods("GET")
 

@@ -49,16 +49,20 @@ func (r *exchangeRateRepository) InsertOrUpdateExchangeRate(rate *models.Exchang
 func (r *exchangeRateRepository) GetExchangeRates(currencyCode string, timestamp int64) ([]models.ExchangeRate, error) {
 	var rates []models.ExchangeRate
 
-	query := r.db.Joins("JOIN currencies ON exchange_rates.currency_id = currencies.id")
+	// Start the query
+	query := r.db.Joins("JOIN currencies AS c1 ON exchange_rates.currency_id = c1.id").
+		Joins("JOIN currencies AS c2 ON exchange_rates.base_currency_id = c2.id").
+		Preload("Currency").Preload("BaseCurrency")
 
+	// Apply filters if provided
 	if currencyCode != "" {
-		query = query.Where("currencies.code = ?", currencyCode)
+		query = query.Where("c1.code = ?", currencyCode)
 	}
-
 	if timestamp != 0 {
 		query = query.Where("exchange_rates.timestamp = ?", timestamp)
 	}
 
+	// Execute the query
 	err := query.Find(&rates).Error
 	return rates, err
 }
