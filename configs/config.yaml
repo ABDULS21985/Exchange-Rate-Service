@@ -1,0 +1,15 @@
+# configs/config.yaml
+
+database:
+  host: localhost          # Changed from 'db' to 'localhost'
+  port: 5432
+  user: postgres
+  password: Secured$3211
+  dbname: nuprc
+  sslmode: disable
+
+server:
+  port: 8080
+
+jwt:
+  secret: drkatanga2020

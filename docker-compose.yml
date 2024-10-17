@@ -1,0 +1,43 @@
+# docker-compose.yml
+
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Secured$3211
+      POSTGRES_DB: nuprc
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./migrations:/migrations
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    environment:
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: Secured$3211
+      DATABASE_DBNAME: nuprc
+      DATABASE_SSLMODE: disable
+      JWT_SECRET: your-secret-key
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./configs:/app/configs
+      - ./migrations:/app/migrations
+
+volumes:
+  db-data:
